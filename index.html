@@ -765,7 +765,7 @@
     });
 
     function updateCompletionProgress() {
-      const requiredInputs = document.querySelectorAll("#preSurveyForm input[required]");
+      const requiredInputs = document.querySelectorAll("#preSurveyForm input[required], #preSurveyForm select[required]");
       const checkedGroups = new Set();
       let answeredCount = 0;
 
@@ -778,7 +778,7 @@
         } else if (input.type === "checkbox") {
           if (input.checked) answeredCount++;
         } else {
-          if (input.value.trim() !== "") answeredCount++;
+          if ((input.value || "").trim() !== "") answeredCount++;
         }
       });
 
@@ -791,10 +791,17 @@
 
     function validateEntireForm() {
       const form = document.getElementById("preSurveyForm");
-      const requiredInputs = form.querySelectorAll("input[required]");
+      const requiredInputs = form.querySelectorAll("input[required], select[required]");
 
       for (let input of requiredInputs) {
-        if (input.type === "radio") {
+        if (input.tagName === "SELECT") {
+          if (!input.value || input.value.trim() === "") {
+            input.scrollIntoView({ behavior: "smooth", block: "center" });
+            input.focus();
+            showToast("Please select your nationality.");
+            return false;
+          }
+        } else if (input.type === "radio") {
           const radioGroup = form.querySelectorAll(`input[name="${input.name}"]`);
           if (!Array.from(radioGroup).some(r => r.checked)) {
             const card = input.closest("div") || input.parentElement;
